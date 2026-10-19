@@ -1,0 +1,38 @@
+private String getCurrentVersionChangelog() {
+    OutputStream changelogDataOS = new ByteArrayOutputStream()
+    exec {
+        commandLine 'chmod', "+x", './changelog_parser.sh'
+    }
+    exec {
+        standardOutput = changelogDataOS
+        commandLine './changelog_parser.sh', "${project.version}", 'CHANGELOG.md'
+    }
+
+    return changelogDataOS.toString().trim()
+}
+
+def githubTokenVariableName = "GITHUB_RELEASE_TOKEN"
+def githubTokenVariableFromEnv = System.getenv(githubTokenVariableName)
+
+def secretFile = new File(projectDir, "secret.gradle")
+if (secretFile.exists() || project.hasProperty(githubTokenVariableName) || (githubTokenVariableFromEnv != "" && githubTokenVariableFromEnv != null)) {
+    if (secretFile.exists()) {
+        apply from: './secret.gradle'
+    }
+    apply plugin: "com.github.breadmoirai.github-release"
+    def githubReleaseToken = project.hasProperty(githubTokenVariableName) ? project.property(githubTokenVariableName).toString() : githubTokenVariableFromEnv
+
+    githubRelease {
+        token githubReleaseToken
+
+        owner = "InsanusMokrassar"
+        repo = "PlaguPoster"
+
+        tagName = "v${project.version}"
+        releaseName = "${project.version}"
+        targetCommitish = "${project.version}"
+
+        body = getCurrentVersionChangelog()
+    }
+}
+

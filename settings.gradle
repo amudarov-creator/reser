@@ -1,0 +1,32 @@
+rootProject.name = 'plaguposter'
+
+String[] includes = [
+    ":common",
+    ":posts",
+    ":posts:panel",
+    ":posts:gc",
+    ":posts_registrar",
+    ":ratings",
+    ":ratings:source",
+    ":ratings:selector",
+    ":ratings:gc",
+    ":triggers:command",
+    ":triggers:selector_with_timer",
+    ":triggers:timer",
+    ":triggers:timer:disablers:ratings",
+    ":triggers:timer:disablers:autoposts",
+    ":inlines",
+//    ":settings",
+    ":runner"
+]
+
+
+includes.each { originalName ->
+    String projectDirectory = "${rootProject.projectDir.getAbsolutePath()}${originalName.replace(":", File.separator)}"
+    String projectName = "${rootProject.name}${originalName.replace(":", ".")}"
+    String projectIdentifier = ":${projectName}"
+    include projectIdentifier
+    ProjectDescriptor project = project(projectIdentifier)
+    project.name = projectName
+    project.projectDir = new File(projectDirectory)
+}
